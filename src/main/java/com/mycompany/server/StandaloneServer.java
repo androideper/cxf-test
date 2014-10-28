@@ -6,13 +6,14 @@ import org.codehaus.jackson.jaxrs.JacksonJaxbJsonProvider;
 
 public class StandaloneServer {
 
-    protected StandaloneServer() throws Exception {
+    private StandaloneServer() throws Exception {
         JAXRSServerFactoryBean sf = new JAXRSServerFactoryBean();
         sf.setResourceClasses(TestResource.class);
         sf.setResourceProvider(TestResource.class,
                 new SingletonResourceProvider(new TestResourceImpl()));
         sf.setAddress("http://localhost:8081/");
 
+        // This provider is needed for json/Jaxb serialization/de-serialization
         sf.setProvider(new JacksonJaxbJsonProvider());
         sf.create();
     }
