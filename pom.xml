@@ -91,6 +91,8 @@
                     <descriptors>
                         <descriptor>${project.basedir}/assembly.xml</descriptor>
                     </descriptors>
+                    <finalName>${project.artifactId}-${project.version}</finalName>
+                    <appendAssemblyId>false</appendAssemblyId>
                 </configuration>
             </plugin>
         </plugins>
