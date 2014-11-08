@@ -4,6 +4,7 @@ import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.apache.cxf.jaxrs.client.JAXRSClientFactory;
 import org.apache.cxf.jaxrs.lifecycle.SingletonResourceProvider;
+import org.apache.cxf.validation.BeanValidationInInterceptor;
 import org.codehaus.jackson.jaxrs.JacksonJaxbJsonProvider;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -32,6 +33,19 @@ public class TestResourceImplTest {
     @BeforeClass
     public static void setUpClass() {
         server = startServer();
+    }
+
+    private static Server startServer() {
+        JAXRSServerFactoryBean sf = new JAXRSServerFactoryBean();
+        sf.setResourceClasses(TestResource.class);
+        sf.setResourceProvider(TestResource.class,
+                new SingletonResourceProvider(new TestResourceImpl()));
+        sf.setAddress("http://localhost:8081/");
+        // needed for json/Jaxb serialization/de-serialization
+        sf.setProvider(new JacksonJaxbJsonProvider());
+        sf.setProvider(new AppExceptionMapper());
+        sf.getInInterceptors().add(new BeanValidationInInterceptor());
+        return sf.create();
     }
 
     @AfterClass
@@ -64,6 +78,15 @@ public class TestResourceImplTest {
         //then
         assertThat(resultItems.size(), is(givenItems.size() + 1));
         assertListContainsItem(resultItems, item);
+    }
+
+    private void assertListContainsItem(List<Item> list, Item item) {
+        for (Item listItem : list) {
+            if (item.equals(listItem)) {
+                return;
+            }
+        }
+        fail("List does not contain given item: " + item);
     }
 
     @Test
@@ -101,6 +124,54 @@ public class TestResourceImplTest {
     }
 
     @Test
+    public void updateItemWithNullName() throws Exception {
+        //given
+        Item givenItem = client.addItem(new Item("givenUpdateItemName", "givenUpdateItemDesc")).readEntity(Item.class);
+        givenItem.setName(null);
+        givenItem.setDescription("newUpdateDesc");
+        //when
+        Response response = client.updateItem(givenItem);
+        //then
+        assertThat(response.getStatus(), is(Response.Status.BAD_REQUEST.getStatusCode()));
+    }
+
+    @Test
+    public void updateItemWithEmptyName() throws Exception {
+        //given
+        Item givenItem = client.addItem(new Item("givenUpdateItemName", "givenUpdateItemDesc")).readEntity(Item.class);
+        givenItem.setName("");
+        givenItem.setDescription("newUpdateDesc");
+        //when
+        Response response = client.updateItem(givenItem);
+        //then
+        assertThat(response.getStatus(), is(Response.Status.BAD_REQUEST.getStatusCode()));
+    }
+
+    @Test
+    public void updateItemWithNullDescription() throws Exception {
+        //given
+        Item givenItem = client.addItem(new Item("givenUpdateItemName", "givenUpdateItemDesc")).readEntity(Item.class);
+        givenItem.setName("newUpdateName");
+        givenItem.setDescription(null);
+        //when
+        Response response = client.updateItem(givenItem);
+        //then
+        assertThat(response.getStatus(), is(Response.Status.BAD_REQUEST.getStatusCode()));
+    }
+
+    @Test
+    public void updateItemWithEmptyDescription() throws Exception {
+        //given
+        Item givenItem = client.addItem(new Item("givenUpdateItemName", "givenUpdateItemDesc")).readEntity(Item.class);
+        givenItem.setName("newUpdateName");
+        givenItem.setDescription("");
+        //when
+        Response response = client.updateItem(givenItem);
+        //then
+        assertThat(response.getStatus(), is(Response.Status.BAD_REQUEST.getStatusCode()));
+    }
+
+    @Test
     public void addItem() throws Exception {
         //given
         Item givenItem = new Item("givenItemName", "givenItemDesc");
@@ -115,6 +186,46 @@ public class TestResourceImplTest {
     }
 
     @Test
+    public void addItemWithNullName() throws Exception {
+        //given
+        Item givenItem = new Item(null, "givenItemDesc");
+        //when
+        Response response = client.addItem(givenItem);
+        //then
+        assertThat(response.getStatus(), is(Response.Status.BAD_REQUEST.getStatusCode()));
+    }
+
+    @Test
+    public void addItemWithEmptyName() throws Exception {
+        //given
+        Item givenItem = new Item("", "givenItemDesc");
+        //when
+        Response response = client.addItem(givenItem);
+        //then
+        assertThat(response.getStatus(), is(Response.Status.BAD_REQUEST.getStatusCode()));
+    }
+
+    @Test
+    public void addItemWithNullDescription() throws Exception {
+        //given
+        Item givenItem = new Item("givenItemName", null);
+        //when
+        Response response = client.addItem(givenItem);
+        //then
+        assertThat(response.getStatus(), is(Response.Status.BAD_REQUEST.getStatusCode()));
+    }
+
+    @Test
+    public void addItemWithEmptyDescription() throws Exception {
+        //given
+        Item givenItem = new Item("givenItemName", "");
+        //when
+        Response response = client.addItem(givenItem);
+        //then
+        assertThat(response.getStatus(), is(Response.Status.BAD_REQUEST.getStatusCode()));
+    }
+
+    @Test
     public void deleteItem() throws Exception {
         //given
         Item givenItem = client.addItem(new Item("givenUpdateItemName", "givenUpdateItemDesc")).readEntity(Item.class);
@@ -123,25 +234,5 @@ public class TestResourceImplTest {
         assertThat(response.getStatus(), is(Response.Status.OK.getStatusCode()));
         Item item = client.getItem(String.valueOf(givenItem.getId()));
         assertNull(item);
-    }
-
-    private static Server startServer() {
-        JAXRSServerFactoryBean sf = new JAXRSServerFactoryBean();
-        sf.setResourceClasses(TestResource.class);
-        sf.setResourceProvider(TestResource.class,
-                new SingletonResourceProvider(new TestResourceImpl()));
-        sf.setAddress("http://localhost:8081/");
-        // needed for json/Jaxb serialization/de-serialization
-        sf.setProvider(new JacksonJaxbJsonProvider());
-        return sf.create();
-    }
-
-    private void assertListContainsItem(List<Item> list, Item item) {
-        for (Item listItem : list) {
-            if (item.equals(listItem)) {
-                return;
-            }
-        }
-        fail("List does not contain given item: " + item);
     }
 }
