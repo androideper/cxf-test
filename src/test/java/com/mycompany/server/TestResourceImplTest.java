@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -46,6 +47,15 @@ public class TestResourceImplTest {
 
     @Test
     public void getItems() throws Exception {
+        //given
+        //when
+        List<Item> resultItems = client.getItems();
+        //then
+        assertNotNull(resultItems);
+    }
+
+    @Test
+    public void getItemsSize() throws Exception {
         //given a client
         List<Item> givenItems = client.getItems();
         //when
@@ -67,6 +77,16 @@ public class TestResourceImplTest {
     }
 
     @Test
+    public void getItemWhenDoesNotExist() throws Exception {
+        //given
+        String givenId = "-1";
+        //when
+        Item expectedItem = client.getItem(givenId);
+        //then
+        assertNull(expectedItem);
+    }
+
+    @Test
     public void updateItem() throws Exception {
         //given
         Item givenItem = client.addItem(new Item("givenUpdateItemName", "givenUpdateItemDesc")).readEntity(Item.class);
@@ -75,6 +95,7 @@ public class TestResourceImplTest {
         //when
         Response response = client.updateItem(givenItem);
         //then
+        assertThat(response.getStatus(), is(Response.Status.OK.getStatusCode()));
         Item expectedItem = client.getItem(String.valueOf(givenItem.getId()));
         assertTrue(givenItem.equals(expectedItem));
     }
