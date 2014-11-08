@@ -1,5 +1,8 @@
 package com.mycompany.server;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+
 import static com.mycompany.Utils.stringsEqual;
 
 /**
@@ -17,14 +20,6 @@ public class Item {
         this.description = description;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public int getId() {
         return id;
     }
@@ -33,6 +28,18 @@ public class Item {
         this.id = id;
     }
 
+    @NotNull
+    @Size(min = 1)
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @NotNull
+    @Size(min = 1)
     public String getDescription() {
         return description;
     }

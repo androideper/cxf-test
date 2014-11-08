@@ -1,5 +1,7 @@
 package com.mycompany.server;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -16,17 +18,17 @@ public interface TestResource {
 
     @GET
     @Path("/items/{id}/")
-    Item getItem(@PathParam("id") String id);
+    Item getItem(@NotNull @PathParam("id") String id);
 
     @PUT
     @Path("/items/")
-    Response updateItem(Item item);
+    Response updateItem(@Valid Item item);
 
     @POST
     @Path("/items/")
-    Response addItem(Item item);
+    Response addItem(@Valid Item item);
 
     @DELETE
     @Path("/items/{id}/")
-    Response deleteItem(@PathParam("id") String id);
+    Response deleteItem(@NotNull @PathParam("id") String id);
 }
