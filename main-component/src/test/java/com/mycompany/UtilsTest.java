@@ -19,6 +19,12 @@ public class UtilsTest {
     String firstString, secondString;
     boolean result;
 
+    public UtilsTest(String firstString, String secondString, boolean result) {
+        this.firstString = firstString;
+        this.secondString = secondString;
+        this.result = result;
+    }
+
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
@@ -30,12 +36,6 @@ public class UtilsTest {
                 {"",   "1",  false},
                 {"1",  "1",  true},
         });
-    }
-
-    public UtilsTest(String firstString, String secondString, boolean result) {
-        this.firstString = firstString;
-        this.secondString = secondString;
-        this.result = result;
     }
 
     @Test
